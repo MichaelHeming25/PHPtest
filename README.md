@@ -4,9 +4,6 @@ Teste de seleção para vaga PHP
 
 ## Requisitos.
 
-Construir uma aplicação web para buscar endereço. Aplicação deve fazer uma chamada na API via cep : https://viacep.com.br/.
-Premissas:
-
   ● APACHE.
   
   ● PHP 5.6 ou superior.
