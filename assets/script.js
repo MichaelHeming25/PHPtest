@@ -6,6 +6,16 @@ var options_cep = {
     }
 };
 
+$('#ddd').mask('(00)', options_ddd);
+
+var options_ddd = {
+    onKeyPress: function (cpf, ev, el, op) {
+        var masks = ['(00)'],
+            mask = (cpf.length > 14) ? masks[1] : masks[0];
+        el.mask(mask, op);
+    }
+};
+
 $('#cep').mask('00000-000', options_cep);
 
 function isNumber(evt) {
@@ -66,56 +76,125 @@ function myFunc(callback, args)
     callback.apply(this, args);
 }
 
-var getAdress = (data) => {
-    let dados = JSON.parse(data);
-    let cep = dados.cep;
-    
-    let url = `https://viacep.com.br/ws/${cep}/json`;
-
-    $.ajax({
-        url: url,
-        type: 'GET',
-        dataType: "json",
-        success: function(result){
-            console.log(result);
-        },
-        error: function(erro) {
-            console.log(erro);
-        }
-    });
-}
-
-
-$(function() {
+// Ajax responsavel pela requisição de dados na API
+var findAddress = () => {
     $("#form").submit(function(e) {
         e.preventDefault();
 
         let cep = $("#cep").val();
-
         cep = cep.replace('-', '');
+        
+        let url = `https://viacep.com.br/ws/${cep}/xml`;
 
-        var data = {
-            'cep': cep,
-        }
-
-        var dados = JSON.stringify(data);
-
-        // getAdress(dados);
-
-        if (!cep) {
-           myFunc(notify, ['Por favor, insira o cep.', 'danger'])
-        } else {
-            $.ajax({
-                url: './Database/index.php',
-                type: 'POST',
-                data: {data: dados},
-                success: function(result){
+        $.ajax({
+            url: url,
+            type: 'GET',
+            dataType: "xml",
+            success: function(result){
+                if (result.getElementsByTagName("erro")[0]) {
+                    myFunc(notify, ['O CEP inserido não é válido.', 'danger'])
+                } else {
                     
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    // Retorno caso algum erro ocorra
+                    var data = {
+                        'cep' : result.getElementsByTagName("cep")[0].innerHTML,
+                        'logradouro' : result.getElementsByTagName("logradouro")[0].innerHTML,
+                        'complemento' : result.getElementsByTagName("complemento")[0].innerHTML,
+                        'bairro' : result.getElementsByTagName("bairro")[0].innerHTML,
+                        'localidade' : result.getElementsByTagName("localidade")[0].innerHTML,
+                        'uf' : result.getElementsByTagName("uf")[0].innerHTML,
+                        'ddd' : result.getElementsByTagName("ddd")[0].innerHTML
+                    }
+    
+                    recordData(data);
                 }
-            });
-        }
+            },
+            error: function(erro) {
+                alert('cep invalido');
+            }
+        });
     });
+}
+
+// Ajax responsavel por gravador os dados na base
+var recordData = (data) => {
+    var dados = JSON.stringify(data);
+    $.ajax({
+        // Caso queira salvar os dados do endereço em um documento de texto utilize a url: './App/saveInText.php'
+        // caso queira salvar no banco de dados utilize a url: './App/saveInDatabase.php'
+        url: './App/saveInDatabase.php',
+        type: 'POST',
+        data: {data: dados},
+        success: function(result){
+
+            let dados = JSON.parse(result);
+            let cep = dados.cep;
+            let logradouro = dados.logradouro;
+            let complemento = dados.complemento;
+            let bairro = dados.bairro;
+            let localidade = dados.localidade;
+            let uf = dados.uf;
+            let ddd = dados.ddd;
+
+            $("body").append(`
+                <div class="modal fade" id="modalEnderecos" tabindex="-1" aria-labelledby="modalEnderecosLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalEnderecosLabel">Informações do cep: ${cep}</h5>
+                            <button type="button" class="btn-close" id="clear" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                        
+                            <div class="row">
+                                <div class="form-group col-2">
+                                    <label for="cep">CEP</label>
+                                    <input type="text" name="cep" id="cep" value="${cep}" style="pointer-events: none">
+                                </div>
+                                <div class="form-group col-6">
+                                    <label for="logradouro">Logradouro:</label>
+                                    <input type="text" name="logradouro" id="logradouro" value="${logradouro}" style="pointer-events: none">
+                                </div>
+                                <div class="form-group col-4">
+                                    <label for="complemento">Complemento:</label>
+                                    <input type="text" name="complemento" id="complemento" value="${complemento}" style="pointer-events: none">
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="form-group col-5">
+                                    <label for="bairro">Bairro:</label>
+                                    <input type="text" name="bairro" id="bairro" value="${bairro}" style="pointer-events: none">
+                                </div>
+                                <div class="form-group col-3">
+                                    <label for="localidade">Localidade:</label>
+                                    <input type="text" name="localidade" id="localidade" value="${localidade}" style="pointer-events: none">
+                                </div>
+                                <div class="form-group col-2">
+                                    <label for="uf">UF:</label>
+                                    <input type="text" name="uf" id="uf" value="${uf}" style="pointer-events: none">
+                                </div>
+                                <div class="form-group col-2">
+                                    <label for="ddd">DDD:</label>                            
+                                    <input type="text" name="ddd" id="ddd" value="${ddd}" style="pointer-events: none">
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            `); 
+
+            $("#modalEnderecos").modal("show");
+            
+            $("#clear").click(function() {
+                console.log('teste');
+                $(".modal").remove();
+                $(".modal-backdrop").remove();
+            });
+        },
+        error: function(error) { console.log(error) }
+    });
+}
+
+$(document).ready(function() {
+    findAddress();
 });

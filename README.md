@@ -2,25 +2,28 @@
 
 Teste de seleção para vaga PHP
 
-## Faça um fork desse projeto e siga as intruções a seguir utilizando esse projeto.
+## Requisitos.
 
 Construir uma aplicação web para buscar endereço. Aplicação deve fazer uma chamada na API via cep : https://viacep.com.br/.
 Premissas:
 
-  ● Usar PHP 5.6 ou superior.
+  ● APACHE.
   
-  ● Usar Bootstrap.
+  ● PHP 5.6 ou superior.
   
-  ● JavaScript (Não usar framework).
-  
-  ● Retorno deve ser em xml.
-  
-  ● Salvar os dados em uma base e antes de uma nova consulta verificar se o cep já foi consultado, caso tenha sido, trazer    informação da base e não deve efetuar uma nova consulta.
-  
-  ● Tratar o erro. Dar um retorno amigável para usuário leigo.
+  ● MYSQL.
   
   
-## PS: Valorizamos a criatividade no layout.
+## Instalação.
 
-# Entrega: 
- * Disponibilizar um link do repositório no GitHub e encaminhar para developer@cd2.com.br
+  ● git clone https://github.com/MichaelHeming25/PHPtest
+
+  ● Importar no mysql a base de dados que esta na raiz do projeto (db.sql)
+  
+  ● Se estiver utilizando o xampp, adicionar os arquivos na pasta "htdocs", caso esteja utilizando o wamp, adicionar os arquivos na pasta "C:\wamp\www"
+  
+  
+## Métodos para salvar os dados de endereço.
+
+Há 2 maneiras de salvar os dados de endereço, salvando os dados no banco de dados, ou salvando os dados em um documento de texto "Base.txt"
+Caso queira salvar os dados no banco de dados, vá até "Assets/script.js" e altere a url do ajax, na função "recordData" para: "./App/saveInDatabase.php". Caso queira salvar os dados na base de texto, altere a url para: "./App/saveInText.php".

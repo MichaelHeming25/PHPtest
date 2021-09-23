@@ -11,11 +11,12 @@
     <link rel="stylesheet" href="./assets/style.css">
 </head>
 <body>
+
     <div class="container">
         <div class="template">
             <form id="form">
-                <div class="form-group">
-                    <input type="text" name="cep" id="cep" placeholder="Insira o seu cep..." autocomplete="off">
+                <div class="form-group col-3" style="width: 100%">
+                    <input type="text" name="cep" id="cep" placeholder="Insira aqui o seu cep" autocomplete="off">
                 </div>
                 <button type="submit" class="button">Buscar</button>
             </form>
